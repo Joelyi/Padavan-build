@@ -41,6 +41,18 @@ jobs:
       env:
         TNAME: PSG1218_hzn
       run: |
+        cd /opt/public/LANG_CN/
+        sh install_LANG_CN.sh
+        #
+        cd /opt/public/Theme/
+        sh install_Theme.sh
+        #
+        cd /opt/public/Patch/
+        sh install_Patch.sh
+        #
+        cd /opt/public/build_toolchain
+        sh install_build_toolchain.sh
+        #
         if [ -f public/shadowsocks.sh ] ; then
         mv -f public/shadowsocks.sh /opt/rt-n56u/trunk/user/shadowsocks/scripts/shadowsocks.sh
         echo "shadowsocks SH copy success"
