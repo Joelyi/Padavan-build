@@ -42,9 +42,6 @@ jobs:
         TNAME: PSG1208_hzn
       run: |
         #
-        cd /opt/public/Setconfig/
-        sh install_Setconfig.sh
-        #
         cd /opt/public/LANG_CN/
         sh install_LANG_CN.sh
         #
