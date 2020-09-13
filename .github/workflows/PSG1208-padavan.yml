@@ -56,9 +56,6 @@ jobs:
         cd /opt/Btools/Patch/
         sh install_Patch.sh
         #
-        cd /opt/Btools/build_toolchain
-        sh install_build_toolchain.sh
-        #
         if [ -f public/shadowsocks.sh ] ; then
         mv -f public/shadowsocks.sh /opt/rt-n56u/trunk/user/shadowsocks/scripts/shadowsocks.sh
         echo "shadowsocks SH copy success"
