@@ -44,32 +44,44 @@ jobs:
         #
         if [ -f public/LANG_CN/install_LANG_CN.sh ] ; then
         echo "sh install_LANG_CN.sh"
+        else
+        exit 1
+        fi 
         #
         if [ -f public/Theme/install_Theme.sh ] ; then
         echo "sh install_Theme.sh"
+        else
+        exit 2
+        fi 
         #
         if [ -f public/Patch/install_Patch.sh ] ; then
         echo "sh install_Patch.sh"
+        else
+        exit 3
+        fi 
         #
         if [ -f public/build_toolchain/install_build_toolchain.sh ] ; then
         echo "sh install_build_toolchain.sh"
+        else
+        exit 4
+        fi 
         #
         if [ -f public/shadowsocks.sh ] ; then
         mv -f public/shadowsocks.sh /opt/rt-n56u/trunk/user/shadowsocks/scripts/shadowsocks.sh
         echo "shadowsocks SH copy success"
         else
-        exit 1
+        exit 5
         fi 
         if [ -f public/PSG1208_hzn.config ] ; then
         mv -f public/PSG1208_hzn.config /opt/rt-n56u/trunk/configs/templates/PSG1208_hzn.config
         echo "config file copy success"
         else
-        exit 2
+        exit 6
         fi 
         cd /opt/rt-n56u/trunk
         if [ ! -f configs/templates/$TNAME.config ] ; then
         echo "configs/templates/$TNAME.config not found "
-        exit 3
+        exit 7
         fi
         cp -f configs/templates/$TNAME.config .config
         sed -i 's/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=n/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=y/g' .config
