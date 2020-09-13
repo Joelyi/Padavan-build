@@ -1,5 +1,5 @@
 #修改TNAME: K2P-5.0 中的K2P-5.0为你需要编译的型号，注意名称要与configs/templates/目录下的名字相同
-name: PSG1208 Padavan
+name: Padavan PSG1208
 
 on: 
   release:
@@ -7,10 +7,10 @@ on:
   push:
     tags:
     - 'v*'
-  #  branches: 
-  #    - master
+#    branches: 
+#      - master
 #  schedule:
-#    - cron: 0 8 * * 5
+#    - cron: 0 19 * * *
   watch:
     types: [started]
 
@@ -26,62 +26,55 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
+        echo "###########################"
+        pwd
+        #
+        sudo mv Btools /opt/
+        cd /opt/Btools
+        echo "sudo ls -l"
+        pwd
+        sudo ls -l
+        echo "###########################"
+        #
         sudo apt-get update
-        sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd fakeroot \
+        sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd \
         cpio git python-docutils gettext automake autopoint texinfo build-essential help2man \
-        pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget gcc-multilib
+        pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev gcc-multilib
     - name: Clone source code
-      run: |
-        git clone --depth=1 https://github.com/chongshengB/rt-n56u.git /opt/rt-n56u
-        cd /opt/rt-n56u/toolchain-mipsel
-        sh dl_toolchain.sh
-        mkdir -p /opt/images/
-    
-    - name: Build Firmware
       env:
         TNAME: PSG1208_hzn
       run: |
+        git clone --depth=1 https://github.com/chongshengB/rt-n56u.git /opt/rt-n56u
+        mkdir -p /opt/images/
         #
-        if [ -f public/LANG_CN/install_LANG_CN.sh ] ; then
-        echo "sh install_LANG_CN.sh"
-        else
-        exit 1
-        fi 
+        cd /opt/Btools/LANG_CN/
+        sh install_LANG_CN.sh
         #
-        if [ -f public/Theme/install_Theme.sh ] ; then
-        echo "sh install_Theme.sh"
-        else
-        exit 2
-        fi 
+        cd /opt/Btools/Theme/
+        sh install_Theme.sh
         #
-        if [ -f public/Patch/install_Patch.sh ] ; then
-        echo "sh install_Patch.sh"
-        else
-        exit 3
-        fi 
+        cd /opt/Btools/Patch/
+        sh install_Patch.sh
         #
-        if [ -f public/build_toolchain/install_build_toolchain.sh ] ; then
-        echo "sh install_build_toolchain.sh"
-        else
-        exit 4
-        fi 
+        cd /opt/Btools/build_toolchain
+        sh install_build_toolchain.sh
         #
         if [ -f public/shadowsocks.sh ] ; then
         mv -f public/shadowsocks.sh /opt/rt-n56u/trunk/user/shadowsocks/scripts/shadowsocks.sh
         echo "shadowsocks SH copy success"
         else
-        exit 5
+        exit 1
         fi 
-        if [ -f public/PSG1208_hzn.config ] ; then
-        mv -f public/PSG1208_hzn.config /opt/rt-n56u/trunk/configs/templates/PSG1208_hzn.config
+        if [ -f public/PSG1218_hzn.config ] ; then
+        mv -f public/PSG1218_hzn.config /opt/rt-n56u/trunk/configs/templates/PSG1218_hzn.config
         echo "config file copy success"
         else
-        exit 6
+        exit 2
         fi 
         cd /opt/rt-n56u/trunk
         if [ ! -f configs/templates/$TNAME.config ] ; then
         echo "configs/templates/$TNAME.config not found "
-        exit 7
+        exit 3
         fi
         cp -f configs/templates/$TNAME.config .config
         sed -i 's/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=n/CONFIG_FIRMWARE_INCLUDE_OPENSSL_EXE=y/g' .config
@@ -134,8 +127,11 @@ jobs:
         #sed -i '/自定义项/d' .config
         #echo "自定义项=y" >> .config
         #########################################################################################
-        sudo ./clear_tree
-        sudo ./build_firmware_modify $TNAME 0
+    - name: Build Firmware
+      run: |
+        cd /opt/rt-n56u/trunk
+        sudo ./clear_tree.sh
+        sudo ./build_firmware.sh
         sudo mv -f images/*.trx /opt/images/
     - name : Upload packages
       uses: actions/upload-artifact@master
@@ -143,3 +139,15 @@ jobs:
       with:
         name: Padavan-packages
         path: /opt/images
+    - name: Upload firmware to cowtransfer
+      if: always()
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        ./transfer cow --block 2621440 -s -p 64 --no-progress /opt/images 2>&1 | tee cowtransfer.log
+        echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
+    - name: Upload firmware to WeTransfer
+      if: always()
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        ./transfer wet -s -p 16 --no-progress /opt/images 2>&1 | tee wetransfer.log
+        echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
