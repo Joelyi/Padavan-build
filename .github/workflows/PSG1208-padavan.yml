@@ -26,36 +26,20 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        echo "###########################"
-        pwd
-        #
-        sudo mv Btools /opt/
-        cd /opt/Btools
-        echo "sudo ls -l"
-        pwd
-        sudo ls -l
-        echo "###########################"
-        #
         sudo apt-get update
-        sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd \
+        sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd fakeroot \
         cpio git python-docutils gettext automake autopoint texinfo build-essential help2man \
-        pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev gcc-multilib
+        pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget
     - name: Clone source code
-      env:
-        TNAME: PSG1208_hzn
       run: |
         git clone --depth=1 https://github.com/chongshengB/rt-n56u.git /opt/rt-n56u
+        cd /opt/rt-n56u/toolchain-mipsel
+        sh dl_toolchain.sh
         mkdir -p /opt/images/
-        #
-        cd /opt/Btools/LANG_CN/
-        sh install_LANG_CN.sh
-        #
-        cd /opt/Btools/Theme/
-        sh install_Theme.sh
-        #
-        cd /opt/Btools/Patch/
-        sh install_Patch.sh
-        #
+        
+    - name: Build Firmware
+      env:
+        TNAME: PSG1218_hzn
         if [ -f public/shadowsocks.sh ] ; then
         mv -f public/shadowsocks.sh /opt/rt-n56u/trunk/user/shadowsocks/scripts/shadowsocks.sh
         echo "shadowsocks SH copy success"
@@ -124,6 +108,25 @@ jobs:
         #sed -i '/自定义项/d' .config
         #echo "自定义项=y" >> .config
         #########################################################################################
+        echo "###########################"
+        pwd
+        #
+        sudo mv Btools /opt/
+        cd /opt/Btools
+        echo "sudo ls -l"
+        pwd
+        sudo ls -l
+        echo "###########################"
+        #
+        cd /opt/Btools/LANG_CN/
+        sh install_LANG_CN.sh
+        #
+        cd /opt/Btools/Theme/
+        sh install_Theme.sh
+        #
+        cd /opt/Btools/Patch/
+        sh install_Patch.sh
+        #
         sudo ./clear_tree
         sudo ./build_firmware_modify $TNAME 0
         sudo mv -f images/*.trx /opt/images/
